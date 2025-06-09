@@ -1,0 +1,56 @@
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+  </head>
+  <body>
+    <h1><b>TensorFlow.js - Modelo Cuadrático</b></h1>
+    <p>Fórmula: y = 2x² - 3x + 1</p>
+    <div id="output_field">Entrenando modelo...</div>
+    <br>
+    <label for="inputX">Ingrese un valor para x:</label>
+    <input type="number" id="inputX">
+    <button onclick="predecir()">Predecir</button>
+    <div id="resultado"></div>
+
+    <script>
+      let model;
+
+      async function trainModel() {
+        model = tf.sequential();
+
+        
+        model.add(tf.layers.dense({ inputShape: [1], units: 10, activation: 'relu' }));
+        model.add(tf.layers.dense({ units: 1 }));
+
+        model.compile({
+          optimizer: tf.train.adam(),
+          loss: 'meanSquaredError'
+        });
+
+        
+        const xs = tf.tensor2d([-3, -2, -1, 0, 1, 2, 3, 4, 5, 6], [10, 1]);
+        const ys = xs.square().mul(2).sub(xs.mul(3)).add(1); 
+
+        await model.fit(xs, ys, { epochs: 500 });
+
+        document.getElementById("output_field").innerText = "Modelo entrenado correctamente";
+      }
+
+      async function predecir() {
+        const inputX = parseFloat(document.getElementById("inputX").value);
+        if (isNaN(inputX)) {
+          document.getElementById("resultado").innerText = "Ingrese un número válido.";
+          return;
+        }
+
+        const inputTensor = tf.tensor2d([inputX], [1, 1]);
+        const outputTensor = model.predict(inputTensor);
+        const y = await outputTensor.data();
+
+        document.getElementById("resultado").innerText = `Para x = ${inputX}, y ≈ ${y[0].toFixed(2)}`;
+      }
+
+      trainModel();
+    </script>
+  </body>
+</html>
